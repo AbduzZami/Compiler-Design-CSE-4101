@@ -1,0 +1,147 @@
+\\\\    input and output from and to a text file
+
+flex LexicalAnalyzer.l 
+gcc lex.yy.c
+./a.out <input.txt> output.txt
+
+\\\\\\\
+=> for any character
+. {printf("Character Match!\n");}
+
+=> for any string
+.* {printf("Character Match!\n");}
+
+=> for int
+"int" {printf("Character Match!\n");}
+
+"int" {printf("INT\n");}
+
+=> semicolon
+";" {printf("SM\n");}
+
+=> identifier
+[A-Za-z_][a-zA-Z0-9_]* {printf("ID\n");}
+
+=> new line and tab ignore and above things
+[ \n\t] {}
+"int" {printf("INT\n");}
+";" {printf("SM\n");}
+[A-Za-z_][a-zA-Z0-9_]* {printf("ID\n");}
+
+=> detect [int a = 10;]
+[ \n\t] {}
+"int" {printf("INT\n");}
+";" {printf("SM\n");}
+"=" {printf("EQU\n");}
+[A-Za-z_][a-zA-Z0-9_]* {printf("ID\n");}
+[0-9]+ {printf("INT_VAL\n");}
+. {printf("Character Not Match!\n");}
+
+=> detect [int main()]
+[ \n\t] {}
+"main" {printf("MAIN\n");}
+"int" {printf("INT\n");}
+";" {printf("SM\n");}
+"=" {printf("EQU\n");}
+[A-Za-z_][a-zA-Z0-9_]* {printf("ID\n");}
+[0-9]+ {printf("INT_VAL\n");}
+"(" {printf("ARG_START\n");}
+")" {printf("ARG_END\n");}
+. {printf("Character Not Match!\n");}
+
+
+\\ normal lexical analyzer
+%{
+    #include<stdio.h>
+    int i = 0;
+%}
+
+%%
+[ \n\t] {}
+"main" {printf("MAIN\n");}
+"return" {printf("RETURN\n");}
+"int" {printf("INT\n");}
+"double" {printf("DOUBLE\n");}
+"float" {printf("FLOAT\n");}
+";" {printf("SM\n");}
+"=" {printf("EQUL\n");}
+"+" {printf("ADD\n");}
+[A-Za-z_][a-zA-Z0-9_]* {printf("ID\n");}
+[0-9]+ {printf("INT_VAL\n");}
+[0-9]*"."[0-9]+ {printf("FLOAT_DOUBLE_VAL\n");}
+"(" {printf("FUNC_ARG_START\n");}
+")" {printf("FUNC_ARG_END\n");}
+"{" {printf("FUNC_BODY_START\n");}
+"}" {printf("FUNC_BODY_END\n");}
+. {printf("Character Not Match!\n");}
+
+%%
+int yywrap(void){}
+int main(){
+    yylex();
+    return 0;
+}
+
+
+
+\\\\\ syntax analyzer 
+
+%{
+    #include<stdio.h>
+    void yyerror(char *s);
+    extern int yylex();
+    %}
+
+    %token INT ID EQUL INT_VAL SM RETURN ADD MAIN 
+    %start st
+
+    %%
+    st: INT ID SM {printf("Declaration\n");}
+
+    %%
+    int main()
+    {
+        yyparse();
+        printf("Parsing Complete.\n");
+    }
+
+    void yyerror(char *s)
+    {
+        fprintf(stderr, "error:%s",s);
+    }
+
+
+
+\\\ new lexical analyzer with syntaxanalyzer
+
+%option noyywrap
+%{
+    #include<stdio.h>
+    #include "SyntaxAnalyzer.tab.h"
+    int i = 0;
+%}
+
+%%
+[ \n\t] {}
+"main" {return MAIN;}
+"return" {return RETURN;}
+"int" {return INT;}
+";" {return SM;}
+"=" {return EQUL;}
+"+" {return ADD;}
+[A-Za-z_][a-zA-Z0-9_]* {return ID;}
+[0-9]+ {return INT_VAL;}
+
+%%
+
+
+\\\\\\\\\\\\
+how to run syntax analyzer
+=>
+
+bison -d SyntaxAnalyzer.y 
+flex LexicalAnalyzer.l 
+gcc SyntaxAnalyzer.tab.c lex.yy.c 
+./a.out <input.txt> output.txt   [for input output after running executable]
+
+

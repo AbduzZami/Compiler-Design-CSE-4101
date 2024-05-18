@@ -1,0 +1,60 @@
+[Source]  =  test.c
+
+Preprocess  =>  gcc -E test.c > test.i
+
+[Modified Source]  =   test.i
+
+Compile   =>   gcc -S -masm=intel test.i
+
+[Assembly]   =   test.s
+
+Assembler  =>   as -o test.o test.s
+
+[Object Code]  =   test.o
+
+Linker    =>    objdump -M intel -d test.o > test.dump
+
+[Exe File]  =   test.exe    =     objdump -M intel -d test.o > test.exe
+
+[Loader + Execution] =>  ./a.out   // for linux
+
+
+// Run a simple c code first in shortcut way then following all the steps above
+
+For shortcut 
+
+gcc -o test.o test.c
+objdump -M intel -d test.o > test.dump
+
+Then the dump file got from the step by step execution will be shorter than the short cut method
+
+
+//////////////////
+
+
+LEX
+Code Structure
+------------------
+
+Configuration
+%{
+    declaration
+%}
+
+    definition
+
+
+%%
+rules
+
+%%
+
+user code
+
+
+\\\\\\\\\\\\\\\\\\\\
+
+run the lex file
+flex lex.l  [it will create a lex.yy.c file]
+gcc lex.yy.c [it will create a a.out file]
+./a.out  [it will run the exe/out file exe = win out = lin ]
